@@ -8,7 +8,7 @@ module WatchBuild
     # returns the path the newly created provisioning profile (in /tmp usually)
     def run
       FastlaneCore::PrintTable.print_values(config: WatchBuild.config,
-                                            hide_keys: [],
+                                            hide_keys: [:apple_key_id,:apple_issuer_id,:apple_keyfile_path],
                                             title: "Summary for WatchBuild #{WatchBuild::VERSION}")
 
       UI.message("Starting login with user '#{WatchBuild.config[:username]}'")
@@ -17,7 +17,7 @@ module WatchBuild
       ENV['FASTLANE_ITC_TEAM_NAME'] = WatchBuild.config[:itc_team_name] if WatchBuild.config[:itc_team_name]
       ENV['SLACK_URL'] = WatchBuild.config[:slack_url]
 
-      Spaceship::ConnectAPI.login(WatchBuild.config[:username], nil, use_portal: false, use_tunes: true)
+      Spaceship::ConnectAPI.auth(key_id: WatchBuild.config[:apple_key_id], issuer_id: WatchBuild.config[:apple_issuer_id], filepath: WatchBuild.config[:apple_keyfile_path], key: nil, duration: nil, in_house: nil)
       UI.message('Successfully logged in')
 
       start = Time.now
@@ -110,7 +110,7 @@ module WatchBuild
       }
 
       header = {'Content-Type': 'application/json'}
-  
+
       http = Net::HTTP.new(slack_url.host, slack_url.port)
       http.use_ssl = true
       request = Net::HTTP::Post.new(slack_url.request_uri, header)
